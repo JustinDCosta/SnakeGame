@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Snake Game</title>
+    <title>Classic Snake</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
         <!-- UI Overlay -->
         <div id="ui-layer" class="active">
-            <h1 id="ui-title" class="title">NEON SNAKE</h1>
+            <h1 id="ui-title" class="title">CLASSIC SNAKE</h1>
             <p>Use Arrow Keys to Move</p>
-            <button id="start-btn" class="btn">START GAME</button>
+            <button id="start-btn" class="btn">PLAY</button>
         </div>
         
         <!-- Score Board -->
         <div class="score-board">
-            <div class="score-box">SCORE: <span id="score">0</span></div>
-            <div class="score-box">HIGH SCORE: <span id="high-score">0</span></div>
+            <div class="score-box">
+                <span class="label">SCORE:</span>
+                <span id="score" class="value">0</span>
+            </div>
+            <div class="score-box">
+                <span class="label">HIGH SCORE:</span>
+                <span id="high-score" class="value">0</span>
+            </div>
         </div>
 
         <!-- Game Canvas -->
