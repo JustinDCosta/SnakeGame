@@ -1,0 +1,111 @@
+:root {
+    --bg-color: #0f172a;
+    --neon-blue: #00f3ff;
+    --neon-green: #39ff14;
+    --neon-pink: #ff00ff;
+    --text-color: #ffffff;
+    --grid-color: rgba(255, 255, 255, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: 
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    border: 2px solid var(--neon-blue);
+    border-radius: 12px;
+    box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+    padding: 10px;
+    background-color: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+canvas {
+    display: block;
+    background-color: #000;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* UI Overlay */
+#ui-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+#ui-layer.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.title {
+    font-size: 3rem;
+    color: var(--text-color);
+    text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 30px var(--neon-pink);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.btn {
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--bg-color);
+    background: var(--neon-green);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 0 15px var(--neon-green);
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin-top: 15px;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px var(--neon-green);
+}
+
+/* Score Board */
+.score-board {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px var(--text-color);
+}
+
+.score-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
