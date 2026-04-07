@@ -2,35 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Classic Snake</title>
+    <!-- Modern clean font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <!-- UI Overlay -->
-        <div id="ui-layer" class="active">
-            <h1 id="ui-title" class="title">CLASSIC SNAKE</h1>
-            <p>Use Arrow Keys to Move</p>
-            <button id="start-btn" class="btn">PLAY</button>
-        </div>
-        
-        <!-- Score Board -->
-        <div class="score-board">
-            <div class="score-box">
-                <span class="label">SCORE:</span>
-                <span id="score" class="value">0</span>
+    <div class="game-wrapper">
+        <!-- Top Bar: Scores & Options -->
+        <header class="top-bar">
+            <div class="score-panel">
+                <div class="score-line">Score: <span id="score" class="val">0</span></div>
+                <div class="score-line">Best: <span id="high-score" class="val">0</span></div>
             </div>
-            <div class="score-box">
-                <span class="label">HIGH SCORE:</span>
-                <span id="high-score" class="value">0</span>
+            <div class="controls-panel">
+                <div class="color-picker-wrapper">
+                    <label for="snake-color">Color:</label>
+                    <input type="color" id="snake-color" value="#4a752c">
+                </div>
+                <button id="pause-btn" class="icon-btn" disabled>⏸ Pause</button>
             </div>
-        </div>
+        </header>
 
-        <!-- Game Canvas -->
-        <canvas id="game-canvas" width="600" height="600"></canvas>
+        <!-- Main Game Area -->
+        <main id="canvas-container">
+            <canvas id="game-canvas"></canvas>
+            
+            <!-- Floating UI Overlay -->
+            <div id="ui-layer" class="active">
+                <h1 id="ui-title">CLASSIC SNAKE</h1>
+                <p>Swipe or use arrow keys</p>
+                <button id="start-btn" class="main-btn">PLAY</button>
+            </div>
+            
+            <!-- Pause Overlay -->
+            <div id="pause-layer">
+                <h1>PAUSED</h1>
+            </div>
+        </main>
+
+        <!-- On-Screen Controls for Touch / Mobile -->
+        <footer class="dpad-container">
+            <div class="dpad-row">
+                <button id="btn-up" class="dpad-btn" aria-label="Up">▲</button>
+            </div>
+            <div class="dpad-row">
+                <button id="btn-left" class="dpad-btn" aria-label="Left">◀</button>
+                <button id="btn-down" class="dpad-btn" aria-label="Down">▼</button>
+                <button id="btn-right" class="dpad-btn" aria-label="Right">▶</button>
+            </div>
+        </footer>
     </div>
-    
     <script src="game.js"></script>
 </body>
 </html>
