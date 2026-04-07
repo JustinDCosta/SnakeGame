@@ -1,18 +1,16 @@
+/* Modern Arcade & Playful Base Styling */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Nunito', -apple-system, sans-serif;
-    touch-action: manipulation; /* Prevent zooming on double tap */
+    font-family: 'Fredoka', sans-serif;
+    touch-action: manipulation; 
 }
 
 body {
-    background-color: #1a1a1a;
-    color: #f1f1f1;
+    background-color: #0f131a;
+    color: #fff;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
     width: 100vw;
 }
@@ -22,83 +20,168 @@ body {
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background-color: #2b2b2b;
 }
 
-/* Top Bar Styling */
-.top-bar {
+/* Redesigned Header */
+.game-header {
+    background: linear-gradient(135deg, #1e293b, #2c3e50);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    z-index: 5;
+    position: relative;
+    padding: 12px 20px;
+    border-bottom: 3px solid rgba(255,255,255,0.05);
+}
+
+.header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
-    background: #333;
-    border-bottom: 2px solid #444;
+    margin-bottom: 12px;
 }
 
-.score-panel {
-    display: flex;
-    gap: 15px;
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-.score-line {
-    color: #aaa;
-}
-
-.score-line .val {
-    color: #fff;
-}
-
-.controls-panel {
+.player-profile {
     display: flex;
     align-items: center;
-    gap: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 30px;
+    padding: 6px 14px 6px 6px;
+    transition: background 0.2s;
 }
 
-.color-picker-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9rem;
-    font-weight: 700;
+.player-profile:hover, .player-profile:focus-within {
+    background: rgba(0, 0, 0, 0.4);
 }
 
-input[type="color"] {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
+.avatar-icon {
+    font-size: 1.5rem;
+    margin-right: 8px;
+}
+
+.username-input {
     background: none;
+    border: none;
+    color: #f1c40f;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    outline: none;
+    width: 100px;
+    max-width: 120px;
 }
 
-.icon-btn {
-    background: #555;
+.username-input::placeholder {
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+.scoreboard {
+    display: flex;
+    gap: 15px;
+}
+
+.score-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+.score-card.best {
+    background: rgba(241, 196, 15, 0.1);
+    border-color: rgba(241, 196, 15, 0.3);
+}
+
+.score-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #bdc3c7;
+}
+
+.score-card.best .score-label {
+    color: #f1c40f;
+}
+
+.score-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    line-height: 1;
+}
+
+/* Header Bottom: Options & Toggles */
+.header-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.color-options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #aaa;
+    margin-right: 5px;
+}
+
+.color-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border 0.2s, box-shadow 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.color-swatch:hover {
+    transform: scale(1.15);
+}
+
+.color-swatch.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.3);
+    transform: scale(1.15);
+}
+
+.header-btn {
+    background: #34495e;
     color: #fff;
     border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-weight: 700;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: background 0.1s;
+    box-shadow: 0 4px 0 #2c3e50;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.icon-btn:hover:not(:disabled) {
-    background: #666;
+.header-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #2c3e50;
 }
 
-.icon-btn:disabled {
+.header-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: 0 0 0 #2c3e50;
 }
 
-/* Canvas Container */
+/* Canvas Area */
 #canvas-container {
     flex: 1;
     position: relative;
-    background-color: #aad751;
+    background-color: #a4ce4e; /* Playful green grass */
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -107,9 +190,10 @@ input[type="color"] {
 
 canvas {
     display: block;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
 }
 
-/* Overlays */
+/* Modals / Overlays */
 #ui-layer, #pause-layer {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -117,115 +201,140 @@ canvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgba(43, 43, 43, 0.85); /* Smooth overlay */
+    background: rgba(15, 19, 26, 0.85); 
+    backdrop-filter: blur(5px);
     z-index: 10;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
 }
 
-#ui-layer.active {
+#ui-layer.active, #pause-layer.active {
     opacity: 1;
     pointer-events: auto;
 }
 
-#ui-title {
-    font-size: 2.8rem;
+#ui-title, #pause-layer h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4.5rem;
     font-weight: 900;
     color: #fff;
+    text-shadow: 4px 4px 0 #e74c3c, 8px 8px 0 rgba(0,0,0,0.3);
     margin-bottom: 5px;
     text-align: center;
 }
 
-#ui-layer p {
-    color: #ccc;
-    margin-bottom: 25px;
+.hint {
+    color: #bdc3c7;
+    margin-bottom: 30px;
     font-size: 1.1rem;
+    background: rgba(0,0,0,0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
 }
 
-.main-btn {
-    padding: 15px 40px;
-    font-size: 1.4rem;
+.hint strong {
+    color: #f1c40f;
+}
+
+.action-btn {
+    padding: 16px 50px;
+    font-size: 1.6rem;
     font-weight: 900;
     color: #fff;
     background: #e74c3c;
     border: none;
-    border-radius: 30px;
+    border-radius: 40px;
     cursor: pointer;
-    box-shadow: 0 4px 0 #c0392b;
-    transition: transform 0.1s, box-shadow 0.1s;
-    text-transform: uppercase;
+    box-shadow: 0 6px 0 #c0392b, 0 15px 20px rgba(0,0,0,0.4);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 1px;
 }
 
-.main-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 #c0392b;
+.action-btn:hover {
+    background: #f15647;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #c0392b, 0 15px 25px rgba(0,0,0,0.4);
 }
 
-#pause-layer.active {
-    opacity: 1;
+.action-btn:active {
+    transform: translateY(6px);
+    box-shadow: 0 0 0 #c0392b, 0 5px 10px rgba(0,0,0,0.4);
 }
 
-#pause-layer h1 {
-    font-size: 3rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-}
-
-/* D-Pad Buttons for Touch Screens */
+/* DPAD Mobile */
 .dpad-container {
-    background: #1e1e1e;
+    background: #18202c;
     padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    border-top: 2px solid #333;
+    gap: 12px;
+    border-top: 2px solid rgba(255,255,255,0.05);
 }
 
 .dpad-row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .dpad-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-    background: #444;
-    color: #fff;
+    width: 65px;
+    height: 65px;
+    font-size: 1.8rem;
+    background: #2c3e50;
+    color: #ecf0f1;
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 0 #222;
+    border-radius: 16px;
+    box-shadow: 0 6px 0 #1a252f;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
-    touch-action: none; /* Important to stop zoom */
+    touch-action: none; 
 }
 
 .dpad-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 #222;
-    background: #555;
+    transform: translateY(6px);
+    box-shadow: 0 0 0 #1a252f;
+    background: #34495e;
 }
 
-/* Hide the D-pad container on larger screens (desktop) */
+/* Responsive Rules */
 @media (min-width: 769px) {
     .dpad-container {
-        display: none;
+        display: none; /* Hide DPAD entirely on Desktop/Large Tablets */
     }
 }
 
-/* Adjust sizes for smaller screens */
-@media (max-width: 768px) {
-    #ui-title {
-        font-size: 2.2rem;
+@media (max-width: 500px) {
+    .header-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
     }
-    .dpad-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 1.8rem;
+    .player-profile {
+        width: 100%;
+        justify-content: center;
+    }
+    .username-input {
+        width: 100%;
+        max-width: unset;
+        text-align: center;
+    }
+    .scoreboard {
+        justify-content: space-between;
+    }
+    .header-bottom {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    .color-options {
+        justify-content: center;
+    }
+    #ui-title {
+        font-size: 3.5rem;
     }
 }

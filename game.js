@@ -1,44 +1,62 @@
-// Elements
+// Primary Elements
 const canvasContainer = document.getElementById('canvas-container');
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
+
 const uiLayer = document.getElementById('ui-layer');
 const startBtn = document.getElementById('start-btn');
 const uiTitle = document.getElementById('ui-title');
+
 const pauseLayer = document.getElementById('pause-layer');
 const pauseBtn = document.getElementById('pause-btn');
 
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('high-score');
-const colorPicker = document.getElementById('snake-color');
+const usernameInput = document.getElementById('username');
+const colorSwatches = document.querySelectorAll('.color-swatch');
 
-// Game Config
-const TILE_SIZE = 25; // Logical tile size
-const BOARD_COLOR_1 = '#aad751';
-const BOARD_COLOR_2 = '#a2d149';
-const FOOD_COLOR = '#e7471d'; 
-let S_HEAD_COLOR = '#3e6222';
-let S_BODY_COLOR = '#4a752c';
+// Aesthetic Settings
+const TILE_SIZE = 25;
+const BOARD_COLOR_1 = '#a4ce4e';
+const BOARD_COLOR_2 = '#9bc247';
+const REGULAR_FOOD = '#e74c3c';
+const BIG_FOOD = '#f1c40f'; // Golden / Big Apple
+let S_BODY_COLOR = '#4a752c'; // Dark green via selection
+let S_HEAD_COLOR = '#3e6222'; // Darker head calculated
 
-// Dynamic Grid variables
+// Dimensions
 let GRID_COLS = 20;
 let GRID_ROWS = 20;
 
-// State Variables
-let gameSpeed = 130; 
+// Logical State
+let MIN_SPEED = 60;   // Soft cap so it doesn't get impossible
+let gameSpeed = 130;  // Initial speed
 let lastTime = 0;
+
 let isPlaying = false;
 let isPaused = false;
 let gameOver = false;
-let score = 0;
-let highScore = localStorage.getItem('classicSnakeHighScore') || 0;
 
+let score = 0;
+let applesEatenCount = 0;
+let nextBigAppleAt = 0;
+let isBigAppleOut = false;
+
+// Storage retrieval
+let highScore = localStorage.getItem('classicSnakeHighScore') || 0;
+let savedUsername = localStorage.getItem('snakeUsername') || '';
+
+// Load initial details
+highScoreEl.textContent = highScore;
+usernameInput.value = savedUsername;
+
+// Entities
 let snake = [];
 let food = { x: 0, y: 0 };
 let inputDirection = { x: 0, y: 0 };
 let currentDirection = { x: 0, y: 0 };
 
-// Simple Audio Context
+// Minimal Synth Audio Engine
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(freq, duration = 0.1, type = 'sine', volume = 0.1) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -47,81 +65,102 @@ function playSound(freq, duration = 0.1, type = 'sine', volume = 0.1) {
     
     osc.type = type;
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    
     gain.gain.setValueAtTime(volume, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
     
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
 }
 
-// Initial Setup
-highScoreEl.textContent = highScore;
-resizeCanvas(); // Set initial full screen
-
-// Event Listeners
+// Prepare Canvas Size & Add Event Listeners
+resizeCanvas(); 
 window.addEventListener('resize', handleResize);
-window.addEventListener('keydown', handleKeyDown);
 startBtn.addEventListener('click', startGame);
-
 pauseBtn.addEventListener('click', togglePause);
-document.addEventListener('keydown', (e) => {
-    if ((e.key === 'p' || e.key === 'Escape') && isPlaying && !gameOver) {
-        togglePause();
-    }
+
+// Username memory
+usernameInput.addEventListener('input', (e) => {
+    localStorage.setItem('snakeUsername', e.target.value);
 });
 
-// Color picker logic (Lighter and darker variant of hex)
-colorPicker.addEventListener('input', (e) => {
-    S_BODY_COLOR = e.target.value;
-    S_HEAD_COLOR = LightenDarkenColor(e.target.value, -30); // Make head slightly darker
-});
-
-// Helper for color shading
-function LightenDarkenColor(col, amt) {
-    let usePound = false;
-    if (col[0] == "#") { col = col.slice(1); usePound = true; }
-    let num = parseInt(col, 16);
-    let r = (num >> 16) + amt;
-    if (r > 255) r = 255; else if (r < 0) r = 0;
-    let b = ((num >> 8) & 0x00FF) + amt;
-    if (b > 255) b = 255; else if (b < 0) b = 0;
-    let g = (num & 0x0000FF) + amt;
-    if (g > 255) g = 255; else if (g < 0) g = 0;
-    return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
-}
-
-// On-screen Mobile Controls
-['up', 'down', 'left', 'right'].forEach(dir => {
-    document.getElementById(`btn-${dir}`).addEventListener('pointerdown', (e) => {
-        e.preventDefault(); 
-        triggerDir(dir);
+// Color swatch memory & assignment
+colorSwatches.forEach(swatch => {
+    swatch.addEventListener('click', (e) => {
+        // Clear old selections
+        colorSwatches.forEach(s => s.classList.remove('active'));
+        // Activate current
+        e.target.classList.add('active');
+        S_BODY_COLOR = e.target.dataset.color;
+        S_HEAD_COLOR = LightenDarkenColor(S_BODY_COLOR, -35);
+        if(!isPlaying) draw(); // Render the new colors while idle
     });
 });
 
-// Canvas Sizing Function to fill strictly the visual area
+// Key bindings
+document.addEventListener('keydown', (e) => {
+    // Universal spacebar mechanic (Start / Play Again / Pause / Resume)
+    if (e.code === 'Space') {
+        e.preventDefault(); // Stop page scroll
+        if (!isPlaying || gameOver) {
+            startGame();
+        } else {
+            togglePause();
+        }
+        return;
+    }
+    
+    // Generic P or Esc for pause
+    if ((e.key === 'p' || e.key === 'Escape') && isPlaying && !gameOver) {
+        togglePause();
+        return;
+    }
+    
+    // Core Movement parsing
+    if (!isPlaying || isPaused) return;
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+    }
+    
+    switch(e.key) {
+        case 'ArrowUp': case 'w': case 'W': triggerDir('up'); break;
+        case 'ArrowDown': case 's': case 'S': triggerDir('down'); break;
+        case 'ArrowLeft': case 'a': case 'A': triggerDir('left'); break;
+        case 'ArrowRight': case 'd': case 'D': triggerDir('right'); break;
+    }
+});
+
+// Touch UI
+['up', 'down', 'left', 'right'].forEach(dir => {
+    const btn = document.getElementById(`btn-${dir}`);
+    if(btn) {
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); 
+            triggerDir(dir);
+        });
+    }
+});
+
+// Calculate Grid size based on actual DOM dimensions
 function resizeCanvas() {
     const width = canvasContainer.clientWidth;
     const height = canvasContainer.clientHeight;
     
-    // Fit into 25px blocks dynamically based on user screen size
     GRID_COLS = Math.floor(width / TILE_SIZE);
     GRID_ROWS = Math.floor(height / TILE_SIZE);
     
-    // Make sure we have at least minimum playable space
-    if(GRID_COLS < 5) GRID_COLS = 5;
-    if(GRID_ROWS < 5) GRID_ROWS = 5;
+    // Fallbacks
+    if(GRID_COLS < 10) GRID_COLS = 10;
+    if(GRID_ROWS < 10) GRID_ROWS = 10;
     
     canvas.width = GRID_COLS * TILE_SIZE;
     canvas.height = GRID_ROWS * TILE_SIZE;
     
-    if(!isPlaying) draw(); // Re-draw board while idle
+    if(!isPlaying) draw();
 }
 
-// Handlers
 function handleResize() {
     clearTimeout(window.resizeTimer);
     window.resizeTimer = setTimeout(resizeCanvas, 100);
@@ -133,6 +172,7 @@ function startGame() {
     pauseBtn.disabled = false;
     pauseBtn.textContent = '⏸ Pause';
     
+    // Center snake
     const startX = Math.floor(GRID_COLS / 2);
     const startY = Math.floor(GRID_ROWS / 2);
 
@@ -146,31 +186,20 @@ function startGame() {
     currentDirection = { x: 1, y: 0 };
     
     score = 0;
+    applesEatenCount = 0;
+    isBigAppleOut = false;
+    nextBigAppleAt = Math.floor(Math.random() * 5) + 10; // Between 10 and 15
+    gameSpeed = 130;  // reset speed curve
+    
     gameOver = false;
     isPlaying = true;
     isPaused = false;
-    gameSpeed = 130; 
     
     scoreEl.textContent = score;
     placeFood();
-    playSound(400, 0.15, 'sine');
     
+    playSound(400, 0.2, 'sine'); // Startup noise
     window.requestAnimationFrame(gameLoop);
-}
-
-function handleKeyDown(e) {
-    if (!isPlaying || isPaused) return;
-
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-    }
-
-    switch(e.key) {
-        case 'ArrowUp': case 'w': triggerDir('up'); break;
-        case 'ArrowDown': case 's': triggerDir('down'); break;
-        case 'ArrowLeft': case 'a': triggerDir('left'); break;
-        case 'ArrowRight': case 'd': triggerDir('right'); break;
-    }
 }
 
 function triggerDir(direction) {
@@ -208,6 +237,7 @@ function placeFood() {
             x: Math.floor(Math.random() * GRID_COLS),
             y: Math.floor(Math.random() * GRID_ROWS)
         };
+        // Avoid spawning on the snake body
         valid = !snake.some(segment => segment.x === food.x && segment.y === food.y);
     }
 }
@@ -233,7 +263,7 @@ function update() {
         y: snake[0].y + currentDirection.y 
     };
 
-    // WRAPPING LOGIC (Instead of Wall Collision)
+    // Screen wrapping mechanics
     if (head.x < 0) head.x = GRID_COLS - 1;
     else if (head.x >= GRID_COLS) head.x = 0;
     
@@ -247,16 +277,29 @@ function update() {
 
     snake.unshift(head);
 
-    // Food Logic
+    // Scored / ate food
     if (head.x === food.x && head.y === food.y) {
-        score++;
-        scoreEl.textContent = score;
-        playSound(600, 0.1, 'square'); 
+        applesEatenCount++;
         
-        // Dynamic speed curve
-        if (gameSpeed > 55) {
-            gameSpeed -= 2;
+        // Give 5 pts for big apple, 1 for regular
+        const pointsEarned = isBigAppleOut ? 5 : 1;
+        score += pointsEarned;
+        scoreEl.textContent = score;
+        
+        playSound(isBigAppleOut ? 800 : 600, 0.1, 'square'); 
+        
+        // Smoothly and safely ramp up speed (Math.max prevents infinite zooming)
+        gameSpeed = Math.max(MIN_SPEED, gameSpeed - 2.5);
+
+        // Big Apple Check
+        if (applesEatenCount >= nextBigAppleAt) {
+            isBigAppleOut = true;
+            // set next trigger 10-15 apples away
+            nextBigAppleAt = applesEatenCount + Math.floor(Math.random() * 5) + 10;
+        } else {
+            isBigAppleOut = false;
         }
+
         placeFood();
     } else {
         snake.pop(); // Remove tail
@@ -276,7 +319,8 @@ function triggerGameOver() {
         highScoreEl.textContent = highScore;
     }
 
-    uiTitle.textContent = 'GAME OVER';
+    uiTitle.innerHTML = 'GAME OVER';
+    uiTitle.style.textShadow = '4px 4px 0 #fff, 8px 8px 0 rgba(0,0,0,0.3)'; 
     uiTitle.style.color = '#e74c3c';
     startBtn.textContent = 'PLAY AGAIN';
     
@@ -284,7 +328,7 @@ function triggerGameOver() {
 }
 
 function draw() {
-    // 1. Checkerboard BG
+    // Checkerboard Background Array
     for (let row = 0; row < GRID_ROWS; row++) {
         for (let col = 0; col < GRID_COLS; col++) {
             ctx.fillStyle = (row + col) % 2 === 0 ? BOARD_COLOR_1 : BOARD_COLOR_2;
@@ -292,24 +336,35 @@ function draw() {
         }
     }
 
-    if (snake.length === 0) return; // Prevent draw errors when uninitialized
+    if (snake.length === 0) return;
 
-    // 2. Draw Food (Apple Style)
+    // Draw the Apple
     const fX = food.x * TILE_SIZE;
     const fY = food.y * TILE_SIZE;
     const cO = TILE_SIZE / 2;
     
-    ctx.fillStyle = FOOD_COLOR;
-    ctx.beginPath();
-    ctx.arc(fX + cO, fY + cO, TILE_SIZE * 0.4, 0, Math.PI * 2);
-    ctx.fill();
+    // Scale up rendering dynamically if it's the Big Apple event
+    const appleScale = isBigAppleOut ? 0.6 : 0.4;
     
-    ctx.fillStyle = '#2ecc71';
+    // Glowing or regular color payload
+    ctx.fillStyle = isBigAppleOut ? BIG_FOOD : REGULAR_FOOD;
+    ctx.shadowBlur = isBigAppleOut ? 10 : 0;
+    ctx.shadowColor = isBigAppleOut ? BIG_FOOD : 'transparent';
+    
     ctx.beginPath();
-    ctx.ellipse(fX + cO, fY + cO - TILE_SIZE*0.3, 4, 2, Math.PI/4, 0, Math.PI*2);
+    ctx.arc(fX + cO, fY + cO, TILE_SIZE * appleScale, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0; // reset
+    
+    // Little leaf (only on regular apple to distinctify Golden)
+    if(!isBigAppleOut) {
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.ellipse(fX + cO, fY + cO - TILE_SIZE*0.3, 4, 2, Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+    }
 
-    // 3. Draw Snake
+    // Draw Snake
     ctx.lineJoin = "round";
     snake.forEach((segment, index) => {
         const isHead = index === 0;
@@ -328,35 +383,54 @@ function draw() {
             ctx.fillRect(x, y, w, w);
         }
         
+        // Face rendering
         if (isHead) drawEyes(segment.x, segment.y);
     });
 }
 
 function drawEyes(hX, hY) {
     ctx.fillStyle = '#ffffff'; 
-    const e = 4; const p = 2; // size
+    const e = 4; const p = 2; // size geometry
     
     let o1 = { x: 0, y: 0 }, o2 = { x: 0, y: 0 };
     
+    // Determine face pointing angle relative to tile
     if (currentDirection.x === 1) { 
-        o1 = { x: TILE_SIZE - 8, y: 6 }; o2 = { x: TILE_SIZE - 8, y: TILE_SIZE - 10 };
+        o1 = { x: TILE_SIZE - 9, y: 5 }; o2 = { x: TILE_SIZE - 9, y: TILE_SIZE - 9 };
     } else if (currentDirection.x === -1) { 
-        o1 = { x: 4, y: 6 }; o2 = { x: 4, y: TILE_SIZE - 10 };
+        o1 = { x: 5, y: 5 }; o2 = { x: 5, y: TILE_SIZE - 9 };
     } else if (currentDirection.y === -1) { 
-        o1 = { x: 6, y: 4 }; o2 = { x: TILE_SIZE - 10, y: 4 };
+        o1 = { x: 5, y: 5 }; o2 = { x: TILE_SIZE - 9, y: 5 };
     } else { 
-        o1 = { x: 6, y: TILE_SIZE - 8 }; o2 = { x: TILE_SIZE - 10, y: TILE_SIZE - 8 };
+        // fallback (Down or starting)
+        o1 = { x: 5, y: TILE_SIZE - 9 }; o2 = { x: TILE_SIZE - 9, y: TILE_SIZE - 9 };
     }
 
     const bX = hX * TILE_SIZE; const bY = hY * TILE_SIZE;
 
+    // Whites
     ctx.fillRect(bX + o1.x, bY + o1.y, e, e);
     ctx.fillRect(bX + o2.x, bY + o2.y, e, e);
     
+    // Pupils
     ctx.fillStyle = '#000000';
     let px = currentDirection.x === 1 ? 2 : (currentDirection.x === -1 ? 0 : 1);
     let py = currentDirection.y === 1 ? 2 : (currentDirection.y === -1 ? 0 : 1);
     
     ctx.fillRect(bX + o1.x + px, bY + o1.y + py, p, p);
     ctx.fillRect(bX + o2.x + px, bY + o2.y + py, p, p);
+}
+
+// Math Utility: Calculate shade darkness without CSS
+function LightenDarkenColor(col, amt) {
+    let usePound = false;
+    if (col[0] == "#") { col = col.slice(1); usePound = true; }
+    let num = parseInt(col, 16);
+    let r = (num >> 16) + amt;
+    if (r > 255) r = 255; else if (r < 0) r = 0;
+    let b = ((num >> 8) & 0x00FF) + amt;
+    if (b > 255) b = 255; else if (b < 0) b = 0;
+    let g = (num & 0x0000FF) + amt;
+    if (g > 255) g = 255; else if (g < 0) g = 0;
+    return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
 }

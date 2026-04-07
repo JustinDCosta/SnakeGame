@@ -3,25 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Classic Snake</title>
-    <!-- Modern clean font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Arcade Snake</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Outfit:wght@600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-wrapper">
-        <!-- Top Bar: Scores & Options -->
-        <header class="top-bar">
-            <div class="score-panel">
-                <div class="score-line">Score: <span id="score" class="val">0</span></div>
-                <div class="score-line">Best: <span id="high-score" class="val">0</span></div>
-            </div>
-            <div class="controls-panel">
-                <div class="color-picker-wrapper">
-                    <label for="snake-color">Color:</label>
-                    <input type="color" id="snake-color" value="#4a752c">
+        
+        <!-- Header Panel with Username, Scores, Colors -->
+        <header class="game-header">
+            <div class="header-top">
+                <div class="player-profile">
+                    <div class="avatar-icon">🎮</div>
+                    <input type="text" id="username" class="username-input" placeholder="Player1" maxlength="12" spellcheck="false" autocomplete="off">
                 </div>
-                <button id="pause-btn" class="icon-btn" disabled>⏸ Pause</button>
+                <div class="scoreboard">
+                    <div class="score-card">
+                        <span class="score-label">SCORE</span>
+                        <span id="score" class="score-val">0</span>
+                    </div>
+                    <div class="score-card best">
+                        <span class="score-label">BEST</span>
+                        <span id="high-score" class="score-val">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-bottom">
+                <div class="color-options" id="color-options">
+                    <span class="color-label">Snake Color:</span>
+                    <!-- Predefined color options -->
+                    <button class="color-swatch active" data-color="#4a752c" style="background-color: #4a752c;"></button>
+                    <button class="color-swatch" data-color="#2980b9" style="background-color: #2980b9;"></button>
+                    <button class="color-swatch" data-color="#8e44ad" style="background-color: #8e44ad;"></button>
+                    <button class="color-swatch" data-color="#e67e22" style="background-color: #e67e22;"></button>
+                    <button class="color-swatch" data-color="#c0392b" style="background-color: #c0392b;"></button>
+                </div>
+                <button id="pause-btn" class="header-btn" disabled>⏸ Pause</button>
             </div>
         </header>
 
@@ -29,16 +47,17 @@
         <main id="canvas-container">
             <canvas id="game-canvas"></canvas>
             
-            <!-- Floating UI Overlay -->
+            <!-- Start / Game Over Overlay -->
             <div id="ui-layer" class="active">
-                <h1 id="ui-title">CLASSIC SNAKE</h1>
-                <p>Swipe or use arrow keys</p>
-                <button id="start-btn" class="main-btn">PLAY</button>
+                <h1 id="ui-title">SNAKE</h1>
+                <p class="hint">Press <strong>Space</strong> to Play</p>
+                <button id="start-btn" class="action-btn">PLAY</button>
             </div>
             
-            <!-- Pause Overlay -->
+            <!-- Pose Overlay -->
             <div id="pause-layer">
                 <h1>PAUSED</h1>
+                <p>Press <strong>Space</strong> to Resume</p>
             </div>
         </main>
 
